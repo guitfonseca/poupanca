@@ -3,21 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Desafio dos 200 · R$ 20.100</title>
+<title>Desafio Poupança</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐷</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Figtree:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --paper: #f6f5fb;
-    --rule: #dcd8ea;
-    --ink: #1d1a26;
-    --ink-soft: #5d5870;
-    --red: #c2334a;
-    --marker: #c98ce0;
-    --marker-strong: #8e3fb0;
-    --card: #ffffff;
+    --bg: #f6f8f4;
+    --surface: #ffffff;
+    --ink: #24352b;
+    --ink-soft: #6f7d74;
+    --line: #e4e9e1;
+    --green: #bfe3c6;
+    --green-ink: #2f6b47;
+    --orange: #ffd5b5;
+    --orange-ink: #a5531c;
     color-scheme: light;
     box-sizing: border-box;
     padding-top: env(safe-area-inset-top, 0px);
@@ -25,270 +26,279 @@
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --paper: #17151d;
-      --rule: #2d2a38;
-      --ink: #eeebf5;
-      --ink-soft: #a7a1b8;
-      --red: #ff7a8e;
-      --marker: #7a3d96;
-      --marker-strong: #dba4f2;
-      --card: #201d29;
+      --bg: #151a17;
+      --surface: #1e2520;
+      --ink: #e8efe9;
+      --ink-soft: #9aa89f;
+      --line: #2c352f;
+      --green: #2f5a3e;
+      --green-ink: #a8dcb6;
+      --orange: #6b4329;
+      --orange-ink: #ffc49a;
       color-scheme: dark;
     }
   }
   *, *::before, *::after { box-sizing: inherit; }
   html { scroll-padding-top: env(safe-area-inset-top, 0px); }
   body {
-    margin: 0;
-    background: var(--paper);
-    background-image: repeating-linear-gradient(to bottom, transparent 0 31px, var(--rule) 31px 32px);
-    color: var(--ink);
+    margin: 0; background: var(--bg); color: var(--ink);
     font-family: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
-    line-height: 1.5;
+    line-height: 1.5; -webkit-font-smoothing: antialiased;
   }
-  main { max-width: 640px; margin: 0 auto; padding: 32px 16px 64px; }
+  main { max-width: 560px; margin: 0 auto; padding: 36px 18px 120px; }
 
-  h1 {
-    font-family: "Caveat", "Bradley Hand", cursive;
-    font-weight: 700;
-    font-size: clamp(2.6rem, 9vw, 3.6rem);
-    line-height: 1;
-    margin: 0 0 4px;
+  header p { margin: 0; color: var(--ink-soft); font-weight: 500; }
+  .big {
+    font-size: clamp(2.8rem, 13vw, 4rem); font-weight: 800; letter-spacing: -0.03em;
+    line-height: 1.05; margin: 6px 0 2px; font-variant-numeric: tabular-nums;
   }
-  .goal {
-    font-family: "Caveat", "Bradley Hand", cursive;
-    font-size: clamp(3.4rem, 14vw, 5.2rem);
-    font-weight: 700;
-    line-height: 1;
-    margin: 0;
-    color: var(--marker-strong);
-    position: relative;
-    display: inline-block;
-  }
-  .lede { color: var(--ink-soft); margin: 12px 0 24px; max-width: 46ch; }
+  .of { color: var(--ink-soft); font-size: 1.05rem; }
+  .bar { height: 12px; border-radius: 99px; background: var(--line); overflow: hidden; margin: 18px 0 8px; }
+  .bar > div { height: 100%; width: 0; background: var(--green-ink); border-radius: 99px; transition: width .5s ease; }
+  .meta { display: flex; justify-content: space-between; color: var(--ink-soft); font-size: .92rem; margin-bottom: 28px; }
 
-  .tally {
-    display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: baseline;
-    margin-bottom: 12px;
-  }
-  .tally strong { font-size: 1.5rem; }
-  .tally span { color: var(--ink-soft); }
-  .bar { height: 10px; border-radius: 6px; background: var(--rule); overflow: hidden; margin-bottom: 28px; }
-  .bar > div { height: 100%; width: 0; background: var(--marker-strong); transition: width .4s ease; }
-
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(10, 1fr);
-    border-top: 1.5px solid var(--ink);
-    border-left: 1.5px solid var(--ink);
-    background: var(--card);
-  }
+  .grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; }
   .cell {
-    appearance: none; border: 0; margin: 0; padding: 0;
-    border-right: 1.5px solid var(--ink);
-    border-bottom: 1.5px solid var(--ink);
-    background: transparent;
-    aspect-ratio: 1;
-    font-family: "Caveat", "Bradley Hand", cursive;
-    font-size: clamp(1rem, 4.2vw, 1.45rem);
-    font-weight: 500;
-    color: var(--red);
-    cursor: pointer;
-    position: relative;
+    appearance: none; border: 0; margin: 0; padding: 0; aspect-ratio: 1;
+    border-radius: 9px; background: var(--surface); color: var(--ink-soft);
+    font: 600 clamp(.72rem, 3.2vw, .95rem) "Figtree", system-ui, sans-serif;
+    font-variant-numeric: tabular-nums; cursor: pointer;
+    box-shadow: inset 0 0 0 1px var(--line);
+    transition: background .15s, transform .15s;
   }
-  .cell.done { background: var(--marker); color: var(--ink); font-weight: 700; }
-  .cell.suggest { outline: 3px dashed var(--marker-strong); outline-offset: -5px; }
-  .cell:focus-visible { outline: 3px solid var(--marker-strong); outline-offset: -3px; z-index: 1; }
+  .cell.done { background: var(--green); color: var(--green-ink); box-shadow: none; }
+  .cell.pending { background: var(--orange); color: var(--orange-ink); box-shadow: none; transform: scale(.92); }
+  .cell:focus-visible { outline: 2px solid var(--green-ink); outline-offset: 2px; }
+  .legend { display: flex; gap: 16px; margin-top: 12px; font-size: .85rem; color: var(--ink-soft); }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
 
-  section.helper {
-    margin-top: 32px; padding: 20px; background: var(--card);
-    border: 1.5px solid var(--ink); border-radius: 4px;
-  }
-  .helper h2 { font-family: "Caveat", cursive; font-size: 2rem; margin: 0 0 4px; line-height: 1.1; }
-  .helper p { margin: 0 0 14px; color: var(--ink-soft); }
+  .panel { margin-top: 28px; background: var(--surface); border-radius: 16px; padding: 20px; }
+  .panel h2 { font-size: 1.1rem; margin: 0 0 4px; }
+  .panel p { margin: 0 0 14px; color: var(--ink-soft); font-size: .93rem; }
   .row { display: flex; gap: 8px; flex-wrap: wrap; }
-  input[type=number] {
-    flex: 1 1 140px; min-width: 0;
-    font: inherit; font-size: 1.1rem; padding: 10px 12px;
-    border: 1.5px solid var(--ink); border-radius: 4px;
-    background: var(--paper); color: var(--ink);
+  input {
+    flex: 1 1 150px; min-width: 0; font: inherit; font-size: 1rem; padding: 11px 13px;
+    border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink);
   }
-  button.btn {
-    font: inherit; font-weight: 600; padding: 10px 16px; border-radius: 4px; cursor: pointer;
-    border: 1.5px solid var(--ink); background: var(--ink); color: var(--paper);
+  .btn {
+    font: inherit; font-weight: 700; padding: 11px 16px; border-radius: 10px; cursor: pointer;
+    border: 0; background: var(--green-ink); color: var(--surface);
   }
-  button.btn.ghost { background: transparent; color: var(--ink); }
-  button.btn:focus-visible, input:focus-visible { outline: 3px solid var(--marker-strong); outline-offset: 2px; }
-  .result { margin-top: 14px; min-height: 1.5em; }
-  .result b { color: var(--marker-strong); }
+  .btn.soft { background: var(--bg); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); font-weight: 600; }
+  .btn:focus-visible, input:focus-visible { outline: 2px solid var(--green-ink); outline-offset: 2px; }
 
-  footer { margin-top: 32px; color: var(--ink-soft); font-size: .9rem; }
-  footer .row { margin-top: 10px; }
+  details.panel summary { cursor: pointer; font-weight: 700; list-style: none; }
+  details.panel summary::-webkit-details-marker { display: none; }
+  details.panel summary::after { content: "+"; float: right; color: var(--ink-soft); }
+  details[open].panel summary::after { content: "–"; }
+  details.panel .inner { margin-top: 14px; display: grid; gap: 10px; }
+  .status { font-size: .88rem; color: var(--ink-soft); min-height: 1.3em; }
+  .tiny { margin-top: 24px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  .tiny .btn { font-size: .85rem; padding: 8px 12px; }
 
-  @media (prefers-reduced-motion: reduce) { .bar > div { transition: none; } }
+  .dock {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
+    padding: 12px 18px calc(12px + env(safe-area-inset-bottom, 0px));
+    background: var(--surface); box-shadow: 0 -1px 0 var(--line);
+    transform: translateY(110%); transition: transform .25s ease;
+  }
+  .dock.show { transform: none; }
+  .dock .wrap { max-width: 560px; margin: 0 auto; display: flex; gap: 8px; align-items: center; }
+  .dock .sum { flex: 1; font-weight: 700; }
+  .dock .sum small { display: block; font-weight: 500; color: var(--ink-soft); }
+
+  .toast {
+    position: fixed; left: 50%; top: calc(16px + env(safe-area-inset-top, 0px)); z-index: 10;
+    transform: translate(-50%, -150%); background: var(--green-ink); color: var(--surface);
+    padding: 10px 16px; border-radius: 99px; font-weight: 600; font-size: .92rem;
+    transition: transform .3s ease; max-width: calc(100% - 32px); text-align: center;
+  }
+  .toast.show { transform: translate(-50%, 0); }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>
 <body>
 <main>
-  <h1>Como juntar seus primeiros</h1>
-  <p class="goal">R$ 20.100</p>
-  <p class="lede">200 quadradinhos, de 1 a 200. Todo dia 15 e 30, guarde o valor de alguns e pinte. Quando pintar todos, são R$ 20.100 guardados.</p>
+  <header>
+    <p>🐷 Desafio Poupança</p>
+    <div class="big" id="saved">R$ 0</div>
+    <div class="of">guardados de R$ 20.100</div>
+    <div class="bar" aria-hidden="true"><div id="fill"></div></div>
+    <div class="meta"><span id="pct">0%</span><span id="left">faltam R$ 20.100</span></div>
+  </header>
 
-  <div class="tally">
-    <strong id="saved">R$ 0</strong>
-    <span id="left">faltam R$ 20.100</span>
-    <span id="count">0 de 200</span>
+  <div class="grid" id="grid" role="group" aria-label="Quadradinhos de 1 a 200"></div>
+  <div class="legend">
+    <span><i style="background:var(--green)"></i>Guardado</span>
+    <span><i style="background:var(--orange)"></i>Selecionado</span>
   </div>
-  <div class="bar" aria-hidden="true"><div id="fill"></div></div>
 
-  <div class="grid" id="grid" role="group" aria-label="Quadradinhos do desafio"></div>
-
-  <section class="helper">
+  <section class="panel">
     <h2>Quanto vou guardar hoje?</h2>
-    <p>Digite o valor da quinzena e eu escolho quadradinhos ainda livres que somam exatamente isso.</p>
+    <p>Digite o valor e eu seleciono quadradinhos livres que somam exatamente isso. Ou toque nos números que quiser.</p>
     <div class="row">
       <input type="number" id="amount" inputmode="numeric" min="1" placeholder="Ex.: 800">
-      <button class="btn" id="pick">Escolher quadradinhos</button>
-    </div>
-    <div class="result" id="result" aria-live="polite"></div>
-    <div class="row" id="confirmRow" hidden>
-      <button class="btn" id="confirm">Pintar esses</button>
-      <button class="btn ghost" id="reroll">Outra combinação</button>
+      <button class="btn" id="pick">Selecionar</button>
     </div>
   </section>
 
-  <footer>
-    O progresso fica salvo neste navegador. Para levar para outro aparelho, copie o código e cole lá.
-    <div class="row">
-      <button class="btn ghost" id="export">Copiar código</button>
-      <button class="btn ghost" id="import">Colar código</button>
-      <button class="btn ghost" id="reset">Recomeçar</button>
+  <details class="panel" id="wppBox">
+    <summary>Aviso no WhatsApp</summary>
+    <div class="inner">
+      <p style="margin:0">Ao registrar um depósito, você recebe a confirmação no WhatsApp. Os dados ficam só neste aparelho, não vão pro GitHub.</p>
+      <input id="wppPhone" inputmode="tel" placeholder="Telefone com DDI, ex.: +5511999999999" autocomplete="tel">
+      <input id="wppKey" placeholder="API key do CallMeBot" autocomplete="off">
+      <div class="row">
+        <button class="btn" id="wppSave">Salvar</button>
+        <button class="btn soft" id="wppTest">Enviar teste</button>
+      </div>
+      <div class="status" id="wppStatus"></div>
     </div>
-  </footer>
+  </details>
+
+  <div class="tiny">
+    <button class="btn soft" id="export">Copiar progresso</button>
+    <button class="btn soft" id="import">Colar progresso</button>
+    <button class="btn soft" id="reset">Recomeçar</button>
+  </div>
 </main>
+
+<div class="dock" id="dock">
+  <div class="wrap">
+    <div class="sum"><span id="pendSum">R$ 0</span><small id="pendCount">0 quadradinhos</small></div>
+    <button class="btn soft" id="reroll">Outra</button>
+    <button class="btn soft" id="clear">Limpar</button>
+    <button class="btn" id="confirm">Registrar</button>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 (function () {
-  const KEY = "desafio200";
-  const TOTAL = 20100;
-  let done = new Set();
-  let suggestion = [];
-
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (raw) done = new Set(JSON.parse(raw));
-  } catch (e) {}
-
-  function save() {
-    try { localStorage.setItem(KEY, JSON.stringify([...done])); } catch (e) {}
-  }
+  const KEY = "desafio200", WKEY = "desafio200-wpp", TOTAL = 20100;
+  let done = new Set(), pending = new Set(), wpp = {};
+  try { const r = localStorage.getItem(KEY); if (r) done = new Set(JSON.parse(r)); } catch (e) {}
+  try { const w = localStorage.getItem(WKEY); if (w) wpp = JSON.parse(w) || {}; } catch (e) {}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify([...done])); } catch (e) {} };
   const brl = n => "R$ " + n.toLocaleString("pt-BR");
+  const $ = id => document.getElementById(id);
+  const sumOf = s => [...s].reduce((a, b) => a + b, 0);
 
-  const grid = document.getElementById("grid");
+  let toastT;
+  function toast(msg) {
+    const t = $("toast"); t.textContent = msg; t.classList.add("show");
+    clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 2800);
+  }
+
   const cells = [];
   for (let i = 1; i <= 200; i++) {
     const b = document.createElement("button");
-    b.className = "cell";
-    b.textContent = i;
+    b.className = "cell"; b.textContent = i;
     b.addEventListener("click", () => {
-      done.has(i) ? done.delete(i) : done.add(i);
-      clearSuggestion();
-      save(); render();
+      if (done.has(i)) {
+        if (confirm("Desmarcar R$ " + i + "? Isso tira o valor do saldo.")) { done.delete(i); save(); }
+      } else {
+        pending.has(i) ? pending.delete(i) : pending.add(i);
+      }
+      render();
     });
-    cells[i] = b;
-    grid.appendChild(b);
+    cells[i] = b; $("grid").appendChild(b);
   }
 
   function render() {
-    let sum = 0;
+    const s = sumOf(done);
     for (let i = 1; i <= 200; i++) {
-      const on = done.has(i);
-      if (on) sum += i;
-      cells[i].classList.toggle("done", on);
-      cells[i].classList.toggle("suggest", suggestion.includes(i));
-      cells[i].setAttribute("aria-pressed", on);
-      cells[i].setAttribute("aria-label", "R$ " + i + (on ? ", guardado" : ""));
+      const d = done.has(i), p = pending.has(i);
+      cells[i].classList.toggle("done", d);
+      cells[i].classList.toggle("pending", p);
+      cells[i].setAttribute("aria-pressed", d || p);
+      cells[i].setAttribute("aria-label", "R$ " + i + (d ? ", guardado" : p ? ", selecionado" : ""));
     }
-    document.getElementById("saved").textContent = brl(sum) + " guardados";
-    document.getElementById("left").textContent = sum >= TOTAL ? "desafio completo 🎉" : "faltam " + brl(TOTAL - sum);
-    document.getElementById("count").textContent = done.size + " de 200";
-    document.getElementById("fill").style.width = (sum / TOTAL * 100) + "%";
+    $("saved").textContent = brl(s);
+    $("fill").style.width = (s / TOTAL * 100) + "%";
+    $("pct").textContent = (s / TOTAL * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1 }) + "% · " + done.size + " de 200";
+    $("left").textContent = s >= TOTAL ? "meta batida 🎉" : "faltam " + brl(TOTAL - s);
+    const ps = sumOf(pending);
+    $("pendSum").textContent = brl(ps);
+    $("pendCount").textContent = pending.size + (pending.size === 1 ? " quadradinho" : " quadradinhos");
+    $("dock").classList.toggle("show", pending.size > 0);
   }
 
-  // Subset sum over free cells, shuffled for variety
   function pick(target) {
     const free = [];
     for (let i = 1; i <= 200; i++) if (!done.has(i)) free.push(i);
-    for (let i = free.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [free[i], free[j]] = [free[j], free[i]];
-    }
-    const cap = Math.min(target, TOTAL);
-    const from = new Int16Array(cap + 1).fill(-1);
-    const reach = new Uint8Array(cap + 1);
+    for (let i = free.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [free[i], free[j]] = [free[j], free[i]]; }
+    const cap = Math.min(target, TOTAL), from = new Int16Array(cap + 1).fill(-1), reach = new Uint8Array(cap + 1);
     reach[0] = 1;
-    free.forEach((v, idx) => {
-      for (let s = cap; s >= v; s--) {
-        if (!reach[s] && reach[s - v]) { reach[s] = 1; from[s] = idx; }
-      }
-    });
-    let s = cap;
-    while (s > 0 && !reach[s]) s--;
-    const out = [];
-    while (s > 0) { const v = free[from[s]]; out.push(v); s -= v; }
-    return out.sort((a, b) => a - b);
+    free.forEach((v, idx) => { for (let s = cap; s >= v; s--) if (!reach[s] && reach[s - v]) { reach[s] = 1; from[s] = idx; } });
+    let s = cap; while (s > 0 && !reach[s]) s--;
+    const out = []; while (s > 0) { const v = free[from[s]]; out.push(v); s -= v; }
+    return out;
   }
-
-  const result = document.getElementById("result");
-  const confirmRow = document.getElementById("confirmRow");
-
-  function clearSuggestion() {
-    suggestion = [];
-    result.textContent = "";
-    confirmRow.hidden = true;
-  }
-
   function suggest() {
-    const v = Math.floor(Number(document.getElementById("amount").value));
-    if (!v || v < 1) { result.textContent = "Digite um valor a partir de R$ 1."; confirmRow.hidden = true; return; }
-    suggestion = pick(v);
-    const got = suggestion.reduce((a, b) => a + b, 0);
-    if (!suggestion.length) {
-      result.textContent = "Não sobrou nenhum quadradinho que caiba nesse valor.";
-      confirmRow.hidden = true;
-    } else {
-      result.innerHTML = "Pinte <b>" + suggestion.join(", ") + "</b> = " + brl(got) +
-        (got < v ? " (o mais perto possível de " + brl(v) + ")" : "");
-      confirmRow.hidden = false;
-    }
+    const v = Math.floor(Number($("amount").value));
+    if (!v || v < 1) { toast("Digite um valor a partir de R$ 1"); return; }
+    const got = pick(v);
+    if (!got.length) { toast("Nenhum quadradinho livre cabe nesse valor"); return; }
+    pending = new Set(got);
+    const g = sumOf(pending);
+    if (g < v) toast("O mais perto possível: " + brl(g));
     render();
   }
+  $("pick").addEventListener("click", suggest);
+  $("amount").addEventListener("keydown", e => { if (e.key === "Enter") suggest(); });
+  $("reroll").addEventListener("click", () => {
+    const v = sumOf(pending); pending.clear();
+    const got = pick(v); pending = new Set(got); render();
+  });
+  $("clear").addEventListener("click", () => { pending.clear(); render(); });
 
-  document.getElementById("pick").addEventListener("click", suggest);
-  document.getElementById("reroll").addEventListener("click", suggest);
-  document.getElementById("amount").addEventListener("keydown", e => { if (e.key === "Enter") suggest(); });
-  document.getElementById("confirm").addEventListener("click", () => {
-    suggestion.forEach(i => done.add(i));
-    clearSuggestion(); save(); render();
+  function sendWpp(text) {
+    if (!wpp.phone || !wpp.key) return false;
+    const url = "https://api.callmebot.com/whatsapp.php?phone=" + encodeURIComponent(wpp.phone) +
+      "&text=" + encodeURIComponent(text) + "&apikey=" + encodeURIComponent(wpp.key);
+    fetch(url, { mode: "no-cors" }).catch(() => {});
+    return true;
+  }
+
+  $("confirm").addEventListener("click", () => {
+    const dep = sumOf(pending);
+    pending.forEach(i => done.add(i)); pending.clear(); save(); render();
+    $("amount").value = "";
+    const s = sumOf(done);
+    const sent = sendWpp("🐷 *Desafio Poupança*\nParabéns, Gui! Você depositou " + brl(dep) +
+      "\nSaldo atual: " + brl(s) + "\nRestante para a meta: " + brl(Math.max(TOTAL - s, 0)));
+    toast("Depósito de " + brl(dep) + " registrado" + (sent ? ", aviso enviado" : ""));
   });
 
-  document.getElementById("export").addEventListener("click", async () => {
+  $("wppPhone").value = wpp.phone || ""; $("wppKey").value = wpp.key || "";
+  if (wpp.phone && wpp.key) $("wppStatus").textContent = "WhatsApp configurado neste aparelho.";
+  $("wppSave").addEventListener("click", () => {
+    wpp = { phone: $("wppPhone").value.trim(), key: $("wppKey").value.trim() };
+    try { localStorage.setItem(WKEY, JSON.stringify(wpp)); } catch (e) {}
+    $("wppStatus").textContent = wpp.phone && wpp.key ? "Salvo neste aparelho." : "Preencha telefone e API key.";
+  });
+  $("wppTest").addEventListener("click", () => {
+    const ok = sendWpp("🐷 *Desafio Poupança*\nTeste: os avisos de depósito estão funcionando!");
+    $("wppStatus").textContent = ok ? "Teste enviado. Deve chegar em alguns segundos." : "Salve telefone e API key primeiro.";
+  });
+
+  $("export").addEventListener("click", async () => {
     const code = btoa(JSON.stringify([...done]));
-    try { await navigator.clipboard.writeText(code); alert("Código copiado."); }
+    try { await navigator.clipboard.writeText(code); toast("Progresso copiado"); }
     catch (e) { prompt("Copie este código:", code); }
   });
-  document.getElementById("import").addEventListener("click", () => {
-    const code = prompt("Cole o código do outro aparelho:");
-    if (!code) return;
+  $("import").addEventListener("click", () => {
+    const code = prompt("Cole o código do outro aparelho:"); if (!code) return;
     try {
-      const arr = JSON.parse(atob(code.trim()));
-      if (!Array.isArray(arr)) throw 0;
+      const arr = JSON.parse(atob(code.trim())); if (!Array.isArray(arr)) throw 0;
       done = new Set(arr.filter(n => Number.isInteger(n) && n >= 1 && n <= 200));
-      clearSuggestion(); save(); render();
-    } catch (e) { alert("Código inválido. Copie de novo no outro aparelho."); }
+      pending.clear(); save(); render(); toast("Progresso importado");
+    } catch (e) { toast("Código inválido. Copie de novo no outro aparelho."); }
   });
-  document.getElementById("reset").addEventListener("click", () => {
-    if (confirm("Apagar todo o progresso e recomeçar?")) { done.clear(); clearSuggestion(); save(); render(); }
+  $("reset").addEventListener("click", () => {
+    if (confirm("Apagar todo o progresso e recomeçar?")) { done.clear(); pending.clear(); save(); render(); }
   });
 
   render();
