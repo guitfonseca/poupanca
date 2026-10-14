@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Desafio dos 200 · R$ 20.100</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐷</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Figtree:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #f6f5fb;
+    --rule: #dcd8ea;
+    --ink: #1d1a26;
+    --ink-soft: #5d5870;
+    --red: #c2334a;
+    --marker: #c98ce0;
+    --marker-strong: #8e3fb0;
+    --card: #ffffff;
+    color-scheme: light;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #17151d;
+      --rule: #2d2a38;
+      --ink: #eeebf5;
+      --ink-soft: #a7a1b8;
+      --red: #ff7a8e;
+      --marker: #7a3d96;
+      --marker-strong: #dba4f2;
+      --card: #201d29;
+      color-scheme: dark;
+    }
+  }
+  *, *::before, *::after { box-sizing: inherit; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  body {
+    margin: 0;
+    background: var(--paper);
+    background-image: repeating-linear-gradient(to bottom, transparent 0 31px, var(--rule) 31px 32px);
+    color: var(--ink);
+    font-family: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+    line-height: 1.5;
+  }
+  main { max-width: 640px; margin: 0 auto; padding: 32px 16px 64px; }
+
+  h1 {
+    font-family: "Caveat", "Bradley Hand", cursive;
+    font-weight: 700;
+    font-size: clamp(2.6rem, 9vw, 3.6rem);
+    line-height: 1;
+    margin: 0 0 4px;
+  }
+  .goal {
+    font-family: "Caveat", "Bradley Hand", cursive;
+    font-size: clamp(3.4rem, 14vw, 5.2rem);
+    font-weight: 700;
+    line-height: 1;
+    margin: 0;
+    color: var(--marker-strong);
+    position: relative;
+    display: inline-block;
+  }
+  .lede { color: var(--ink-soft); margin: 12px 0 24px; max-width: 46ch; }
+
+  .tally {
+    display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: baseline;
+    margin-bottom: 12px;
+  }
+  .tally strong { font-size: 1.5rem; }
+  .tally span { color: var(--ink-soft); }
+  .bar { height: 10px; border-radius: 6px; background: var(--rule); overflow: hidden; margin-bottom: 28px; }
+  .bar > div { height: 100%; width: 0; background: var(--marker-strong); transition: width .4s ease; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    border-top: 1.5px solid var(--ink);
+    border-left: 1.5px solid var(--ink);
+    background: var(--card);
+  }
+  .cell {
+    appearance: none; border: 0; margin: 0; padding: 0;
+    border-right: 1.5px solid var(--ink);
+    border-bottom: 1.5px solid var(--ink);
+    background: transparent;
+    aspect-ratio: 1;
+    font-family: "Caveat", "Bradley Hand", cursive;
+    font-size: clamp(1rem, 4.2vw, 1.45rem);
+    font-weight: 500;
+    color: var(--red);
+    cursor: pointer;
+    position: relative;
+  }
+  .cell.done { background: var(--marker); color: var(--ink); font-weight: 700; }
+  .cell.suggest { outline: 3px dashed var(--marker-strong); outline-offset: -5px; }
+  .cell:focus-visible { outline: 3px solid var(--marker-strong); outline-offset: -3px; z-index: 1; }
+
+  section.helper {
+    margin-top: 32px; padding: 20px; background: var(--card);
+    border: 1.5px solid var(--ink); border-radius: 4px;
+  }
+  .helper h2 { font-family: "Caveat", cursive; font-size: 2rem; margin: 0 0 4px; line-height: 1.1; }
+  .helper p { margin: 0 0 14px; color: var(--ink-soft); }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  input[type=number] {
+    flex: 1 1 140px; min-width: 0;
+    font: inherit; font-size: 1.1rem; padding: 10px 12px;
+    border: 1.5px solid var(--ink); border-radius: 4px;
+    background: var(--paper); color: var(--ink);
+  }
+  button.btn {
+    font: inherit; font-weight: 600; padding: 10px 16px; border-radius: 4px; cursor: pointer;
+    border: 1.5px solid var(--ink); background: var(--ink); color: var(--paper);
+  }
+  button.btn.ghost { background: transparent; color: var(--ink); }
+  button.btn:focus-visible, input:focus-visible { outline: 3px solid var(--marker-strong); outline-offset: 2px; }
+  .result { margin-top: 14px; min-height: 1.5em; }
+  .result b { color: var(--marker-strong); }
+
+  footer { margin-top: 32px; color: var(--ink-soft); font-size: .9rem; }
+  footer .row { margin-top: 10px; }
+
+  @media (prefers-reduced-motion: reduce) { .bar > div { transition: none; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Como juntar seus primeiros</h1>
+  <p class="goal">R$ 20.100</p>
+  <p class="lede">200 quadradinhos, de 1 a 200. Todo dia 15 e 30, guarde o valor de alguns e pinte. Quando pintar todos, são R$ 20.100 guardados.</p>
+
+  <div class="tally">
+    <strong id="saved">R$ 0</strong>
+    <span id="left">faltam R$ 20.100</span>
+    <span id="count">0 de 200</span>
+  </div>
+  <div class="bar" aria-hidden="true"><div id="fill"></div></div>
+
+  <div class="grid" id="grid" role="group" aria-label="Quadradinhos do desafio"></div>
+
+  <section class="helper">
+    <h2>Quanto vou guardar hoje?</h2>
+    <p>Digite o valor da quinzena e eu escolho quadradinhos ainda livres que somam exatamente isso.</p>
+    <div class="row">
+      <input type="number" id="amount" inputmode="numeric" min="1" placeholder="Ex.: 800">
+      <button class="btn" id="pick">Escolher quadradinhos</button>
+    </div>
+    <div class="result" id="result" aria-live="polite"></div>
+    <div class="row" id="confirmRow" hidden>
+      <button class="btn" id="confirm">Pintar esses</button>
+      <button class="btn ghost" id="reroll">Outra combinação</button>
+    </div>
+  </section>
+
+  <footer>
+    O progresso fica salvo neste navegador. Para levar para outro aparelho, copie o código e cole lá.
+    <div class="row">
+      <button class="btn ghost" id="export">Copiar código</button>
+      <button class="btn ghost" id="import">Colar código</button>
+      <button class="btn ghost" id="reset">Recomeçar</button>
+    </div>
+  </footer>
+</main>
+
+<script>
+(function () {
+  const KEY = "desafio200";
+  const TOTAL = 20100;
+  let done = new Set();
+  let suggestion = [];
+
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) done = new Set(JSON.parse(raw));
+  } catch (e) {}
+
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify([...done])); } catch (e) {}
+  }
+  const brl = n => "R$ " + n.toLocaleString("pt-BR");
+
+  const grid = document.getElementById("grid");
+  const cells = [];
+  for (let i = 1; i <= 200; i++) {
+    const b = document.createElement("button");
+    b.className = "cell";
+    b.textContent = i;
+    b.addEventListener("click", () => {
+      done.has(i) ? done.delete(i) : done.add(i);
+      clearSuggestion();
+      save(); render();
+    });
+    cells[i] = b;
+    grid.appendChild(b);
+  }
+
+  function render() {
+    let sum = 0;
+    for (let i = 1; i <= 200; i++) {
+      const on = done.has(i);
+      if (on) sum += i;
+      cells[i].classList.toggle("done", on);
+      cells[i].classList.toggle("suggest", suggestion.includes(i));
+      cells[i].setAttribute("aria-pressed", on);
+      cells[i].setAttribute("aria-label", "R$ " + i + (on ? ", guardado" : ""));
+    }
+    document.getElementById("saved").textContent = brl(sum) + " guardados";
+    document.getElementById("left").textContent = sum >= TOTAL ? "desafio completo 🎉" : "faltam " + brl(TOTAL - sum);
+    document.getElementById("count").textContent = done.size + " de 200";
+    document.getElementById("fill").style.width = (sum / TOTAL * 100) + "%";
+  }
+
+  // Subset sum over free cells, shuffled for variety
+  function pick(target) {
+    const free = [];
+    for (let i = 1; i <= 200; i++) if (!done.has(i)) free.push(i);
+    for (let i = free.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [free[i], free[j]] = [free[j], free[i]];
+    }
+    const cap = Math.min(target, TOTAL);
+    const from = new Int16Array(cap + 1).fill(-1);
+    const reach = new Uint8Array(cap + 1);
+    reach[0] = 1;
+    free.forEach((v, idx) => {
+      for (let s = cap; s >= v; s--) {
+        if (!reach[s] && reach[s - v]) { reach[s] = 1; from[s] = idx; }
+      }
+    });
+    let s = cap;
+    while (s > 0 && !reach[s]) s--;
+    const out = [];
+    while (s > 0) { const v = free[from[s]]; out.push(v); s -= v; }
+    return out.sort((a, b) => a - b);
+  }
+
+  const result = document.getElementById("result");
+  const confirmRow = document.getElementById("confirmRow");
+
+  function clearSuggestion() {
+    suggestion = [];
+    result.textContent = "";
+    confirmRow.hidden = true;
+  }
+
+  function suggest() {
+    const v = Math.floor(Number(document.getElementById("amount").value));
+    if (!v || v < 1) { result.textContent = "Digite um valor a partir de R$ 1."; confirmRow.hidden = true; return; }
+    suggestion = pick(v);
+    const got = suggestion.reduce((a, b) => a + b, 0);
+    if (!suggestion.length) {
+      result.textContent = "Não sobrou nenhum quadradinho que caiba nesse valor.";
+      confirmRow.hidden = true;
+    } else {
+      result.innerHTML = "Pinte <b>" + suggestion.join(", ") + "</b> = " + brl(got) +
+        (got < v ? " (o mais perto possível de " + brl(v) + ")" : "");
+      confirmRow.hidden = false;
+    }
+    render();
+  }
+
+  document.getElementById("pick").addEventListener("click", suggest);
+  document.getElementById("reroll").addEventListener("click", suggest);
+  document.getElementById("amount").addEventListener("keydown", e => { if (e.key === "Enter") suggest(); });
+  document.getElementById("confirm").addEventListener("click", () => {
+    suggestion.forEach(i => done.add(i));
+    clearSuggestion(); save(); render();
+  });
+
+  document.getElementById("export").addEventListener("click", async () => {
+    const code = btoa(JSON.stringify([...done]));
+    try { await navigator.clipboard.writeText(code); alert("Código copiado."); }
+    catch (e) { prompt("Copie este código:", code); }
+  });
+  document.getElementById("import").addEventListener("click", () => {
+    const code = prompt("Cole o código do outro aparelho:");
+    if (!code) return;
+    try {
+      const arr = JSON.parse(atob(code.trim()));
+      if (!Array.isArray(arr)) throw 0;
+      done = new Set(arr.filter(n => Number.isInteger(n) && n >= 1 && n <= 200));
+      clearSuggestion(); save(); render();
+    } catch (e) { alert("Código inválido. Copie de novo no outro aparelho."); }
+  });
+  document.getElementById("reset").addEventListener("click", () => {
+    if (confirm("Apagar todo o progresso e recomeçar?")) { done.clear(); clearSuggestion(); save(); render(); }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
