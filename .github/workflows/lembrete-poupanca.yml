@@ -17,7 +17,11 @@ jobs:
           APIKEY: ${{ secrets.CALLMEBOT_APIKEY }}
           PAGE_URL: ${{ vars.DESAFIO_URL }}
         run: |
-          MSG="🐷 Desafio dos 200: hoje é dia de guardar dinheiro! Pinte seus quadradinhos: ${PAGE_URL}"
+          MSG="🐷 *Desafio Poupança*
+          Gui, hoje é dia de guardar dinheiro!
+          Pinte seus quadradinhos em
+          ${PAGE_URL}"
+          MSG="$(printf '%s\n' "$MSG" | sed 's/^ *//')"
           curl -sS -G "https://api.callmebot.com/whatsapp.php" \
             --data-urlencode "phone=${PHONE}" \
             --data-urlencode "text=${MSG}" \
