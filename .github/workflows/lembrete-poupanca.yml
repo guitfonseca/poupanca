@@ -1,0 +1,24 @@
+name: Lembrete desafio dos 200
+
+on:
+  schedule:
+    # Horário em UTC: 12:00 UTC = 09:00 em São Paulo
+    - cron: "0 12 15,30 * *"   # todo dia 15 e 30
+    - cron: "0 12 28 2 *"      # fevereiro não tem dia 30
+  workflow_dispatch:           # botão "Run workflow" pra testar na hora
+
+jobs:
+  avisar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enviar WhatsApp
+        env:
+          PHONE: ${{ secrets.CALLMEBOT_PHONE }}
+          APIKEY: ${{ secrets.CALLMEBOT_APIKEY }}
+          PAGE_URL: ${{ vars.DESAFIO_URL }}
+        run: |
+          MSG="🐷 Desafio dos 200: hoje é dia de guardar dinheiro! Pinte seus quadradinhos: ${PAGE_URL}"
+          curl -sS -G "https://api.callmebot.com/whatsapp.php" \
+            --data-urlencode "phone=${PHONE}" \
+            --data-urlencode "text=${MSG}" \
+            --data-urlencode "apikey=${APIKEY}"
