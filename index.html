@@ -19,6 +19,7 @@
     --green-ink: #2f6b47;
     --orange: #ffd5b5;
     --orange-ink: #a5531c;
+    --red-ink: #b3261e;
     color-scheme: light;
     box-sizing: border-box;
     padding-top: env(safe-area-inset-top, 0px);
@@ -35,10 +36,12 @@
       --green-ink: #a8dcb6;
       --orange: #6b4329;
       --orange-ink: #ffc49a;
+      --red-ink: #ffb4ab;
       color-scheme: dark;
     }
   }
   *, *::before, *::after { box-sizing: inherit; }
+  [hidden] { display: none !important; }
   html { scroll-padding-top: env(safe-area-inset-top, 0px); }
   body {
     margin: 0; background: var(--bg); color: var(--ink);
@@ -55,7 +58,9 @@
   .of { color: var(--ink-soft); font-size: 1.05rem; }
   .bar { height: 12px; border-radius: 99px; background: var(--line); overflow: hidden; margin: 18px 0 8px; }
   .bar > div { height: 100%; width: 0; background: var(--green-ink); border-radius: 99px; transition: width .5s ease; }
-  .meta { display: flex; justify-content: space-between; color: var(--ink-soft); font-size: .92rem; margin-bottom: 28px; }
+  .meta { display: flex; justify-content: space-between; color: var(--ink-soft); font-size: .92rem; }
+  .last { margin: 10px 0 28px; font-size: .92rem; color: var(--ink-soft); }
+  .last b { color: var(--ink); }
 
   .grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; }
   .cell {
@@ -77,13 +82,16 @@
   .panel p { margin: 0 0 14px; color: var(--ink-soft); font-size: .93rem; }
   .row { display: flex; gap: 8px; flex-wrap: wrap; }
   input {
-    flex: 1 1 150px; min-width: 0; font: inherit; font-size: 1rem; padding: 11px 13px;
+    flex: 1 1 150px; min-width: 0; width: 100%; font: inherit; font-size: 1rem; padding: 11px 13px;
     border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink);
   }
+  input[type=checkbox] { width: auto; flex: none; margin: 0 8px 0 0; accent-color: var(--green-ink); }
+  label.check { display: flex; align-items: center; font-size: .92rem; color: var(--ink-soft); }
   .btn {
     font: inherit; font-weight: 700; padding: 11px 16px; border-radius: 10px; cursor: pointer;
-    border: 0; background: var(--green-ink); color: var(--surface);
+    border: 0; background: var(--green-ink); color: var(--surface); min-height: 44px;
   }
+  .btn[disabled] { opacity: .6; cursor: wait; }
   .btn.soft { background: var(--bg); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); font-weight: 600; }
   .btn:focus-visible, input:focus-visible { outline: 2px solid var(--green-ink); outline-offset: 2px; }
 
@@ -93,8 +101,29 @@
   details[open].panel summary::after { content: "–"; }
   details.panel .inner { margin-top: 14px; display: grid; gap: 10px; }
   .status { font-size: .88rem; color: var(--ink-soft); min-height: 1.3em; }
+  .status.err { color: var(--red-ink); }
   .tiny { margin-top: 24px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
   .tiny .btn { font-size: .85rem; padding: 8px 12px; }
+
+  .sync {
+    display: block; margin: 18px auto 0; background: none; border: 0; font: inherit;
+    font-size: .85rem; color: var(--ink-soft); cursor: default; text-align: center;
+  }
+  .sync.err { color: var(--red-ink); cursor: pointer; text-decoration: underline; }
+
+  .hist { list-style: none; margin: 0; padding: 0; }
+  .hist li { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-top: 1px solid var(--line); font-size: .93rem; }
+  .hist li:first-child { border-top: 0; }
+  .hist .v { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .hist .v.neg { color: var(--orange-ink); }
+  .hist .d { color: var(--ink-soft); }
+
+  .gate { max-width: 420px; margin: 8vh auto 0; }
+  .gate .panel { display: grid; gap: 12px; }
+  .gate h1 { font-size: 1.6rem; margin: 0; letter-spacing: -0.02em; }
+  .gate ol { margin: 0; padding-left: 20px; color: var(--ink-soft); font-size: .92rem; }
+  .gate ol li { margin-bottom: 4px; }
+  .gate a { color: var(--green-ink); }
 
   .dock {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
@@ -120,47 +149,94 @@
 </head>
 <body>
 <main>
-  <header>
-    <p>🐷 Desafio Poupança</p>
-    <div class="big" id="saved">R$ 0</div>
-    <div class="of">guardados de R$ 20.100</div>
-    <div class="bar" aria-hidden="true"><div id="fill"></div></div>
-    <div class="meta"><span id="pct">0%</span><span id="left">faltam R$ 20.100</span></div>
-  </header>
-
-  <div class="grid" id="grid" role="group" aria-label="Quadradinhos de 1 a 200"></div>
-  <div class="legend">
-    <span><i style="background:var(--green)"></i>Guardado</span>
-    <span><i style="background:var(--orange)"></i>Selecionado</span>
-  </div>
-
-  <section class="panel">
-    <h2>Quanto vou guardar hoje?</h2>
-    <p>Digite o valor e eu seleciono quadradinhos livres que somam exatamente isso. Ou toque nos números que quiser.</p>
-    <div class="row">
-      <input type="number" id="amount" inputmode="numeric" min="1" placeholder="Ex.: 800">
-      <button class="btn" id="pick">Selecionar</button>
-    </div>
+  <!-- Carregando / senha -->
+  <section class="gate" id="lock">
+    <form class="panel" id="lockForm">
+      <h1>🐷 Desafio Poupança</h1>
+      <p id="lockMsg">Carregando…</p>
+      <div id="lockFields" hidden style="display:grid;gap:12px">
+        <input type="password" id="lockPw" placeholder="Senha" autocomplete="current-password">
+        <label class="check"><input type="checkbox" id="lockRemember" checked>Lembrar neste aparelho</label>
+        <button class="btn" id="lockBtn" type="submit">Entrar</button>
+      </div>
+      <div class="status err" id="lockErr"></div>
+    </form>
   </section>
 
-  <details class="panel" id="wppBox">
-    <summary>Aviso no WhatsApp</summary>
-    <div class="inner">
-      <p style="margin:0">Ao registrar um depósito, você recebe a confirmação no WhatsApp. Os dados ficam só neste aparelho, não vão pro GitHub.</p>
-      <input id="wppPhone" inputmode="tel" placeholder="Telefone com DDI, ex.: +5511999999999" autocomplete="tel">
-      <input id="wppKey" placeholder="API key do CallMeBot" autocomplete="off">
-      <div class="row">
-        <button class="btn" id="wppSave">Salvar</button>
-        <button class="btn soft" id="wppTest">Enviar teste</button>
-      </div>
-      <div class="status" id="wppStatus"></div>
-    </div>
-  </details>
+  <!-- Primeira configuração -->
+  <section class="gate" id="setup" hidden>
+    <form class="panel" id="setupForm">
+      <h1>Configurar uma vez</h1>
+      <p style="margin:0">O progresso vai ficar salvo no repositório <b>poupanca</b>, criptografado com a sua senha. Depois disso, qualquer aparelho ou navegador abre com tudo lá, só pedindo a senha.</p>
+      <ol>
+        <li>Abra <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">github.com/settings/personal-access-tokens/new</a></li>
+        <li>Repository access: <b>Only select repositories</b> → <b>poupanca</b></li>
+        <li>Permissions → Repository → <b>Contents: Read and write</b></li>
+        <li>Escolha a validade mais longa, gere e cole aqui</li>
+      </ol>
+      <input id="sToken" placeholder="Token do GitHub (github_pat_…)" autocomplete="off" required>
+      <input type="password" id="sPw" placeholder="Crie uma senha (mín. 8 caracteres)" autocomplete="new-password" minlength="8" required>
+      <input type="password" id="sPw2" placeholder="Repita a senha" autocomplete="new-password" required>
+      <input id="sPhone" inputmode="tel" placeholder="WhatsApp com DDI (opcional), ex.: +5511999999999" autocomplete="tel">
+      <input id="sKey" placeholder="API key do CallMeBot (opcional)" autocomplete="off">
+      <button class="btn" id="setupBtn" type="submit">Salvar e começar</button>
+      <div class="status" id="setupStatus"></div>
+    </form>
+  </section>
 
-  <div class="tiny">
-    <button class="btn soft" id="export">Copiar progresso</button>
-    <button class="btn soft" id="import">Colar progresso</button>
-    <button class="btn soft" id="reset">Recomeçar</button>
+  <!-- App -->
+  <div id="app" hidden>
+    <header>
+      <p>🐷 Desafio Poupança</p>
+      <div class="big" id="saved">R$ 0</div>
+      <div class="of">guardados de R$ 20.100</div>
+      <div class="bar" aria-hidden="true"><div id="fill"></div></div>
+      <div class="meta"><span id="pct">0%</span><span id="left">faltam R$ 20.100</span></div>
+      <div class="last" id="last"></div>
+    </header>
+
+    <div class="grid" id="grid" role="group" aria-label="Quadradinhos de 1 a 200"></div>
+    <div class="legend">
+      <span><i style="background:var(--green)"></i>Guardado</span>
+      <span><i style="background:var(--orange)"></i>Selecionado</span>
+    </div>
+
+    <section class="panel">
+      <h2>Quanto vou guardar hoje?</h2>
+      <p>Digite o valor e eu seleciono quadradinhos livres que somam exatamente isso. Ou toque nos números que quiser.</p>
+      <div class="row">
+        <input type="number" id="amount" inputmode="numeric" min="1" placeholder="Ex.: 800">
+        <button class="btn" id="pick">Selecionar</button>
+      </div>
+    </section>
+
+    <section class="panel" id="histBox">
+      <h2>Histórico</h2>
+      <ul class="hist" id="hist"></ul>
+    </section>
+
+    <details class="panel" id="cfgBox">
+      <summary>Configurações</summary>
+      <div class="inner">
+        <p style="margin:0">Aviso no WhatsApp a cada depósito (CallMeBot). Fica salvo criptografado junto com o progresso.</p>
+        <input id="wppPhone" inputmode="tel" placeholder="Telefone com DDI, ex.: +5511999999999" autocomplete="tel">
+        <input id="wppKey" placeholder="API key do CallMeBot" autocomplete="off">
+        <input id="newToken" placeholder="Novo token do GitHub (só se o atual vencer)" autocomplete="off">
+        <div class="row">
+          <button class="btn" id="cfgSave">Salvar</button>
+          <button class="btn soft" id="wppTest">Enviar teste</button>
+        </div>
+        <div class="status" id="cfgStatus"></div>
+      </div>
+    </details>
+
+    <div class="tiny">
+      <button class="btn soft" id="export">Copiar progresso</button>
+      <button class="btn soft" id="import">Colar progresso</button>
+      <button class="btn soft" id="reset">Recomeçar</button>
+      <button class="btn soft" id="logout">Sair deste aparelho</button>
+    </div>
+    <button class="sync" id="sync" type="button"></button>
   </div>
 </main>
 
@@ -176,28 +252,199 @@
 
 <script>
 (function () {
-  const KEY = "desafio200", WKEY = "desafio200-wpp", TOTAL = 20100;
-  let done = new Set(), pending = new Set(), wpp = {};
-  try { const r = localStorage.getItem(KEY); if (r) done = new Set(JSON.parse(r)); } catch (e) {}
-  try { const w = localStorage.getItem(WKEY); if (w) wpp = JSON.parse(w) || {}; } catch (e) {}
-  const save = () => { try { localStorage.setItem(KEY, JSON.stringify([...done])); } catch (e) {} };
-  const brl = n => "R$ " + n.toLocaleString("pt-BR");
-  const $ = id => document.getElementById(id);
-  const sumOf = s => [...s].reduce((a, b) => a + b, 0);
+  const TOTAL = 20100;
+  const API = "https://api.github.com/repos/guitfonseca/poupanca/contents/";
+  const BRANCH = "main", VAULT = "data/cofre.json", STATE = "data/progresso.json";
+  const PWKEY = "desafio200-senha", OLD = "desafio200", OLDWPP = "desafio200-wpp";
 
+  const $ = id => document.getElementById(id);
+  const brl = n => "R$ " + n.toLocaleString("pt-BR");
+  const sumOf = s => [...s].reduce((a, b) => a + b, 0);
+  const ls = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+    del(k) { try { localStorage.removeItem(k); } catch (e) {} }
+  };
+
+  let done = new Set(), pending = new Set(), hist = [];
+  let key = null, salt = null, vault = null, vaultBox = null, vaultSha = null, stateSha = null;
+
+  /* ---------- criptografia (AES-GCM, chave derivada da senha) ---------- */
+  const enc = new TextEncoder(), dec = new TextDecoder();
+  const b64 = u8 => { let s = ""; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode(...u8.subarray(i, i + 0x8000)); return btoa(s); };
+  const unb64 = s => Uint8Array.from(atob(s.replace(/\s/g, "")), c => c.charCodeAt(0));
+  async function deriveKey(pw, saltBytes) {
+    const base = await crypto.subtle.importKey("raw", enc.encode(pw), "PBKDF2", false, ["deriveKey"]);
+    return crypto.subtle.deriveKey({ name: "PBKDF2", salt: saltBytes, iterations: 250000, hash: "SHA-256" },
+      base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+  }
+  async function seal(obj) {
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, enc.encode(JSON.stringify(obj))));
+    return { iv: b64(iv), ct: b64(ct) };
+  }
+  async function unseal(box) {
+    const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: unb64(box.iv) }, key, unb64(box.ct));
+    return JSON.parse(dec.decode(pt));
+  }
+
+  /* ---------- GitHub ---------- */
+  async function ghGet(path, token) {
+    const h = { Accept: "application/vnd.github+json" };
+    if (token) h.Authorization = "Bearer " + token;
+    const r = await fetch(API + path + "?ref=" + BRANCH + "&t=" + Date.now(), { cache: "no-store", headers: h });
+    if (r.status === 404) return null;
+    if (r.status === 401 || r.status === 403) throw new Error(token ? "token inválido ou vencido" : "GitHub bloqueou o acesso, tente em alguns minutos");
+    if (!r.ok) throw new Error("GitHub respondeu " + r.status);
+    const j = await r.json();
+    return { sha: j.sha, data: JSON.parse(dec.decode(unb64(j.content))) };
+  }
+  async function ghPut(path, obj, sha, token, msg) {
+    const body = { message: msg, content: b64(enc.encode(JSON.stringify(obj, null, 1))), branch: BRANCH };
+    if (sha) body.sha = sha;
+    const r = await fetch(API + path, {
+      method: "PUT",
+      headers: { Authorization: "Bearer " + token, Accept: "application/vnd.github+json", "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    if (r.status === 409 || r.status === 422) { const e = new Error("conflito"); e.conflict = true; throw e; }
+    if (r.status === 401 || r.status === 403 || r.status === 404) throw new Error("token inválido, vencido ou sem permissão");
+    if (!r.ok) throw new Error("GitHub respondeu " + r.status);
+    return (await r.json()).content.sha;
+  }
+
+  /* ---------- toast ---------- */
   let toastT;
   function toast(msg) {
     const t = $("toast"); t.textContent = msg; t.classList.add("show");
     clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 2800);
   }
 
+  /* ---------- salvar na nuvem ---------- */
+  let queue = Promise.resolve(), saving = 0, lastErr = false;
+  function setSync(text, err) {
+    const s = $("sync"); s.textContent = text; s.classList.toggle("err", !!err); lastErr = !!err;
+  }
+  $("sync").addEventListener("click", () => { if (lastErr) persist("Tentativa de novo"); });
+  const hora = () => new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+
+  function persist(msg) {
+    saving++;
+    setSync("Salvando…");
+    queue = queue.then(async () => {
+      try {
+        const box = await seal({ v: 1, done: [...done].sort((a, b) => a - b), hist });
+        stateSha = await ghPut(STATE, box, stateSha, vault.token, msg);
+        setSync("Salvo ✓ às " + hora());
+      } catch (e) {
+        if (e.conflict) {
+          await loadState().catch(() => {}); render();
+          setSync("Outro aparelho salvou antes. Recarreguei, confira e registre de novo.", true);
+        } else {
+          setSync("Não salvou (" + e.message + "). Toque aqui pra tentar de novo.", true);
+        }
+      } finally { saving--; }
+    });
+    return queue;
+  }
+
+  async function loadState() {
+    const g = await ghGet(STATE, vault.token);
+    if (!g) { stateSha = null; return false; }
+    const st = await unseal(g.data);
+    done = new Set(st.done || []); hist = st.hist || []; stateSha = g.sha;
+    pending.forEach(i => { if (done.has(i)) pending.delete(i); });
+    return true;
+  }
+
+  /* ---------- entrada ---------- */
+  function showOnly(id) { ["lock", "setup", "app"].forEach(x => $(x).hidden = x !== id); }
+
+  async function unlock(pw, remember) {
+    salt = unb64(vaultBox.salt);
+    key = await deriveKey(pw, salt);
+    try { vault = await unseal(vaultBox); }
+    catch (e) { key = null; throw new Error("Senha errada"); }
+    await loadState();
+    if (remember) ls.set(PWKEY, pw); else ls.del(PWKEY);
+    fillCfg(); render(); showOnly("app");
+    setSync(stateSha ? "Sincronizado ✓" : "Nada salvo ainda");
+  }
+
+  async function boot() {
+    let g;
+    try { g = await ghGet(VAULT); }
+    catch (e) { $("lockMsg").textContent = "Não consegui falar com o GitHub (" + e.message + ")."; return; }
+    if (!g) {
+      const w = (() => { try { return JSON.parse(ls.get(OLDWPP)) || {}; } catch (e) { return {}; } })();
+      $("sPhone").value = w.phone || ""; $("sKey").value = w.key || "";
+      showOnly("setup"); return;
+    }
+    vaultBox = g.data; vaultSha = g.sha;
+    const saved = ls.get(PWKEY);
+    if (saved) {
+      $("lockMsg").textContent = "Abrindo…";
+      try { await unlock(saved, true); return; } catch (e) { ls.del(PWKEY); }
+    }
+    $("lockMsg").textContent = "Digite sua senha para ver o progresso.";
+    $("lockFields").hidden = false; $("lockPw").focus();
+  }
+
+  $("lockForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const pw = $("lockPw").value; if (!pw) return;
+    $("lockBtn").disabled = true; $("lockErr").textContent = "";
+    try { await unlock(pw, $("lockRemember").checked); }
+    catch (err) { $("lockErr").textContent = err.message; }
+    finally { $("lockBtn").disabled = false; }
+  });
+
+  $("setupForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const st = $("setupStatus"), token = $("sToken").value.trim(), pw = $("sPw").value;
+    st.className = "status err";
+    if (pw.length < 8) { st.textContent = "A senha precisa ter pelo menos 8 caracteres."; return; }
+    if (pw !== $("sPw2").value) { st.textContent = "As senhas não batem."; return; }
+    $("setupBtn").disabled = true; st.className = "status"; st.textContent = "Criando o cofre…";
+    try {
+      salt = crypto.getRandomValues(new Uint8Array(16));
+      key = await deriveKey(pw, salt);
+      vault = { token, phone: $("sPhone").value.trim(), apikey: $("sKey").value.trim() };
+      vaultBox = Object.assign({ v: 1, salt: b64(salt) }, await seal(vault));
+      vaultSha = await ghPut(VAULT, vaultBox, null, token, "Cria cofre do desafio");
+      // traz o que estava salvo só neste navegador (versão antiga)
+      try { const old = JSON.parse(ls.get(OLD)); if (Array.isArray(old)) done = new Set(old.filter(n => Number.isInteger(n) && n >= 1 && n <= 200)); } catch (e2) {}
+      if (done.size) hist = [{ t: Date.now(), v: sumOf(done), n: [...done], note: "Trazido da versão antiga" }];
+      const ex = await ghGet(STATE, token); stateSha = ex ? ex.sha : null;
+      showOnly("app"); fillCfg(); render();
+      await persist("Primeiro salvamento");
+      ls.set(PWKEY, pw);
+      toast(done.size ? "Pronto! " + brl(sumOf(done)) + " trazidos deste aparelho" : "Pronto! Tudo salvo na nuvem");
+    } catch (err) {
+      st.className = "status err"; st.textContent = "Não deu: " + err.message;
+    } finally { $("setupBtn").disabled = false; }
+  });
+
+  $("logout").addEventListener("click", () => {
+    if (confirm("Esquecer a senha neste aparelho? O progresso continua salvo.")) { ls.del(PWKEY); location.reload(); }
+  });
+
+  // ao voltar pra aba, puxa a versão mais nova (ex.: salvou pelo outro celular)
+  document.addEventListener("visibilitychange", async () => {
+    if (document.visibilityState !== "visible" || !key || saving || pending.size) return;
+    try { await loadState(); render(); } catch (e) {}
+  });
+
+  /* ---------- grade ---------- */
   const cells = [];
   for (let i = 1; i <= 200; i++) {
     const b = document.createElement("button");
     b.className = "cell"; b.textContent = i;
     b.addEventListener("click", () => {
       if (done.has(i)) {
-        if (confirm("Desmarcar R$ " + i + "? Isso tira o valor do saldo.")) { done.delete(i); save(); }
+        if (confirm("Desmarcar R$ " + i + "? Isso tira o valor do saldo.")) {
+          done.delete(i); hist.push({ t: Date.now(), v: -i, n: [i] }); persist("Desmarca " + i);
+        }
       } else {
         pending.has(i) ? pending.delete(i) : pending.add(i);
       }
@@ -206,6 +453,7 @@
     cells[i] = b; $("grid").appendChild(b);
   }
 
+  const dt = t => new Date(t).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit" });
   function render() {
     const s = sumOf(done);
     for (let i = 1; i <= 200; i++) {
@@ -219,12 +467,25 @@
     $("fill").style.width = (s / TOTAL * 100) + "%";
     $("pct").textContent = (s / TOTAL * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1 }) + "% · " + done.size + " de 200";
     $("left").textContent = s >= TOTAL ? "meta batida 🎉" : "faltam " + brl(TOTAL - s);
+
+    const lastDep = [...hist].reverse().find(h => h.v > 0);
+    $("last").innerHTML = lastDep ? "Último depósito: <b>" + brl(lastDep.v) + "</b> em " + dt(lastDep.t) : "Nenhum depósito registrado ainda";
+
+    const items = [...hist].reverse().slice(0, 12);
+    $("histBox").hidden = !items.length;
+    $("hist").innerHTML = items.map(h => {
+      const label = h.note || (h.v < 0 ? "Desmarcado" : h.n.length + (h.n.length === 1 ? " quadradinho" : " quadradinhos"));
+      return '<li><span>' + dt(h.t) + ' <span class="d">· ' + label + '</span></span><span class="v' + (h.v < 0 ? " neg" : "") + '">' +
+        (h.v < 0 ? "− " + brl(-h.v) : "+ " + brl(h.v)) + '</span></li>';
+    }).join("");
+
     const ps = sumOf(pending);
     $("pendSum").textContent = brl(ps);
     $("pendCount").textContent = pending.size + (pending.size === 1 ? " quadradinho" : " quadradinhos");
     $("dock").classList.toggle("show", pending.size > 0);
   }
 
+  /* ---------- sugestão de quadradinhos ---------- */
   function pick(target) {
     const free = [];
     for (let i = 1; i <= 200; i++) if (!done.has(i)) free.push(i);
@@ -250,58 +511,78 @@
   $("amount").addEventListener("keydown", e => { if (e.key === "Enter") suggest(); });
   $("reroll").addEventListener("click", () => {
     const v = sumOf(pending); pending.clear();
-    const got = pick(v); pending = new Set(got); render();
+    pending = new Set(pick(v)); render();
   });
   $("clear").addEventListener("click", () => { pending.clear(); render(); });
 
+  /* ---------- WhatsApp ---------- */
   function sendWpp(text) {
-    if (!wpp.phone || !wpp.key) return false;
-    const url = "https://api.callmebot.com/whatsapp.php?phone=" + encodeURIComponent(wpp.phone) +
-      "&text=" + encodeURIComponent(text) + "&apikey=" + encodeURIComponent(wpp.key);
+    if (!vault || !vault.phone || !vault.apikey) return false;
+    const url = "https://api.callmebot.com/whatsapp.php?phone=" + encodeURIComponent(vault.phone) +
+      "&text=" + encodeURIComponent(text) + "&apikey=" + encodeURIComponent(vault.apikey);
     fetch(url, { mode: "no-cors" }).catch(() => {});
     return true;
   }
 
-  $("confirm").addEventListener("click", () => {
-    const dep = sumOf(pending);
-    pending.forEach(i => done.add(i)); pending.clear(); save(); render();
-    $("amount").value = "";
+  $("confirm").addEventListener("click", async () => {
+    const dep = sumOf(pending), nums = [...pending].sort((a, b) => a - b);
+    nums.forEach(i => done.add(i)); pending.clear();
+    hist.push({ t: Date.now(), v: dep, n: nums });
+    render(); $("amount").value = "";
     const s = sumOf(done);
-    const sent = sendWpp("🐷 *Desafio Poupança*\nParabéns, Gui! Você depositou " + brl(dep) +
-      "\nSaldo atual: " + brl(s) + "\nRestante para a meta: " + brl(Math.max(TOTAL - s, 0)));
-    toast("Depósito de " + brl(dep) + " registrado" + (sent ? ", aviso enviado" : ""));
+    toast("Depósito de " + brl(dep) + " registrado");
+    await persist("Depósito de " + brl(dep));
+    if (!lastErr) {
+      const sent = sendWpp("🐷 *Desafio Poupança*\nParabéns, Gui! Você depositou " + brl(dep) +
+        "\nSaldo atual: " + brl(s) + "\nRestante para a meta: " + brl(Math.max(TOTAL - s, 0)));
+      if (sent) toast("Salvo e aviso enviado no WhatsApp");
+    }
   });
 
-  $("wppPhone").value = wpp.phone || ""; $("wppKey").value = wpp.key || "";
-  if (wpp.phone && wpp.key) $("wppStatus").textContent = "WhatsApp configurado neste aparelho.";
-  $("wppSave").addEventListener("click", () => {
-    wpp = { phone: $("wppPhone").value.trim(), key: $("wppKey").value.trim() };
-    try { localStorage.setItem(WKEY, JSON.stringify(wpp)); } catch (e) {}
-    $("wppStatus").textContent = wpp.phone && wpp.key ? "Salvo neste aparelho." : "Preencha telefone e API key.";
+  /* ---------- configurações ---------- */
+  function fillCfg() {
+    $("wppPhone").value = vault.phone || ""; $("wppKey").value = vault.apikey || ""; $("newToken").value = "";
+    $("cfgStatus").textContent = vault.phone && vault.apikey ? "WhatsApp configurado." : "";
+  }
+  $("cfgSave").addEventListener("click", async () => {
+    const st = $("cfgStatus"); st.className = "status"; st.textContent = "Salvando…";
+    const next = Object.assign({}, vault, { phone: $("wppPhone").value.trim(), apikey: $("wppKey").value.trim() });
+    const nt = $("newToken").value.trim(); if (nt) next.token = nt;
+    try {
+      const box = Object.assign({ v: 1, salt: vaultBox.salt }, await seal(next));
+      vaultSha = await ghPut(VAULT, box, vaultSha, next.token, "Atualiza configurações");
+      vault = next; vaultBox = box; fillCfg(); st.textContent = "Salvo ✓";
+      if (lastErr) persist("Tentativa de novo");
+    } catch (e) {
+      if (e.conflict) { const g = await ghGet(VAULT).catch(() => null); if (g) vaultSha = g.sha; }
+      st.className = "status err"; st.textContent = "Não salvou: " + e.message + (e.conflict ? ". Tente de novo." : "");
+    }
   });
   $("wppTest").addEventListener("click", () => {
     const ok = sendWpp("🐷 *Desafio Poupança*\nTeste: os avisos de depósito estão funcionando!");
-    $("wppStatus").textContent = ok ? "Teste enviado. Deve chegar em alguns segundos." : "Salve telefone e API key primeiro.";
+    $("cfgStatus").textContent = ok ? "Teste enviado. Deve chegar em alguns segundos." : "Salve telefone e API key primeiro.";
   });
 
+  /* ---------- copiar / colar / recomeçar ---------- */
   $("export").addEventListener("click", async () => {
     const code = btoa(JSON.stringify([...done]));
     try { await navigator.clipboard.writeText(code); toast("Progresso copiado"); }
     catch (e) { prompt("Copie este código:", code); }
   });
   $("import").addEventListener("click", () => {
-    const code = prompt("Cole o código do outro aparelho:"); if (!code) return;
+    const code = prompt("Cole o código de progresso:"); if (!code) return;
     try {
       const arr = JSON.parse(atob(code.trim())); if (!Array.isArray(arr)) throw 0;
       done = new Set(arr.filter(n => Number.isInteger(n) && n >= 1 && n <= 200));
-      pending.clear(); save(); render(); toast("Progresso importado");
-    } catch (e) { toast("Código inválido. Copie de novo no outro aparelho."); }
+      hist.push({ t: Date.now(), v: sumOf(done), n: [...done], note: "Progresso colado" });
+      pending.clear(); render(); persist("Importa progresso"); toast("Progresso importado");
+    } catch (e) { toast("Código inválido. Copie de novo."); }
   });
   $("reset").addEventListener("click", () => {
-    if (confirm("Apagar todo o progresso e recomeçar?")) { done.clear(); pending.clear(); save(); render(); }
+    if (confirm("Apagar todo o progresso e recomeçar?")) { done.clear(); pending.clear(); hist = []; render(); persist("Recomeça o desafio"); }
   });
 
-  render();
+  boot();
 })();
 </script>
 </body>
